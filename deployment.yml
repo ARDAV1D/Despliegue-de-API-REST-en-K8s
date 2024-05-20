@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apitecnm-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tecnm-api
+  template:
+    metadata:
+      labels:
+        app: tecnm-api
+    spec:
+      containers:
+        - name: api-container
+          image: apitecnm:v1
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://david:password@db-service:5432/db_apitecnm"
+        - name: db-container
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "db_apitecnm"
+            - name: POSTGRES_USER
+              value: "david"
+            - name: POSTGRES_PASSWORD
+              value: "password" # Especifica la contraseña del superusuario
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: "trust" # Permitir todas las conexiones sin contraseña (para fines de prueba)
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
